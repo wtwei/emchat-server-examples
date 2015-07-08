@@ -335,13 +335,15 @@ class Easemob {
 		$option ['client_id'] = $this->client_id;
 		$option ['client_secret'] = $this->client_secret;
 		$url = $this->url . "token";
-		$fp = @fopen ( "easemob.txt", 'r' );
+		$fp = @fopen ( "easemob.php", 'r' );
 		if ($fp) {
-			$arr = unserialize ( fgets ( $fp ) );
+			$arr = unserialize ( substr(fgets ( $fp ), 8) );
 			if ($arr ['expires_in'] < time ()) {
 				$result = $this->postCurl ( $url, $option, $head = 0 );
+				$result = json_decode($result, 1);
 				$result ['expires_in'] = $result ['expires_in'] + time ();
-				@fwrite ( $fp, serialize ( $result ) );
+				$wfp = @fopen ( "easemob.php", 'w+' );
+				@fwrite ( $wfp, '<?php //' . serialize ( $result ) );
 				return $result ['access_token'];
 				fclose ( $fp );
 				exit ();
@@ -351,10 +353,10 @@ class Easemob {
 			exit ();
 		}
 		$result = $this->postCurl ( $url, $option, $head = 0 );
-		$result = json_decode($result);
+		$result = json_decode($result, 1);
 		$result ['expires_in'] = $result ['expires_in'] + time ();
-		$fp = @fopen ( "easemob.txt", 'w' );
-		@fwrite ( $fp, serialize ( $result ) );
+		$fp = @fopen ( "easemob.php", 'w' );
+		@fwrite ( $fp, '<?php //' . serialize ( $result ) );
 		return $result ['access_token'];
 		fclose ( $fp );
 	}
